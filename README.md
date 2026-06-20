@@ -1,5 +1,6 @@
 
-# Alpha Commander
+# Alpha Commander for Motion Graphics
+
 🇬🇧 [English](#english) | 🇪🇸 [Español](#español)
 
 ---
