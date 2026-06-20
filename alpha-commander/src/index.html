@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Alpha Commander — PNG → WebM Alpha</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="app">
+
+    <!-- Header -->
+    <header class="header">
+      <img src="alpha.png" alt="Alpha Commander Logo" style="width: 48px; height: 48px; border-radius: 8px;">
+      <div>
+        <h1 data-i18n="appTitle">Alpha Commander</h1>
+        <p class="sub" data-i18n="appSubtitle">PNG → WebM con transparencia real</p>
+      </div>
+      <div style="margin-left:auto; display:flex; gap:12px; align-items:center;">
+        <button class="btn bg" id="btnLang" style="padding: 4px 8px; font-size: 12px;">🇺🇸 EN</button>
+      </div>
+    </header>
+
+    <!-- Tab bar -->
+    <nav class="tab-bar">
+      <button class="tab active" data-tab="converter" data-i18n="tabConvert">🎬 Convertir</button>
+      <button class="tab" data-tab="preview" data-i18n="tabPreview">🔍 Verificar Alpha</button>
+    </nav>
+
+    <!-- ═══════════════ TAB: CONVERTER ═══════════════ -->
+    <div class="tab-content active" id="tab-converter">
+
+      <!-- FFmpeg status -->
+      <div class="status-bar" id="ffmpegBar">
+        <span class="dot dp" id="ffDot"></span>
+        <span id="ffStatus">Verificando FFmpeg...</span>
+      </div>
+
+      <!-- Input folder -->
+      <div class="card">
+        <div class="ctitle" data-i18n="inputFolderTitle">Carpeta de entrada</div>
+        <div class="row">
+          <input type="text" id="inputFolder" data-i18n-placeholder="inputFolderPh" placeholder="Seleccioná la carpeta con los PNG..." readonly>
+          <button class="btn bp" id="btnInputFolder" data-i18n="btnBrowse">Buscar</button>
+        </div>
+        <div class="png-info" id="pngInfo"></div>
+      </div>
+
+      <!-- Output folder -->
+      <div class="card">
+        <div class="ctitle" data-i18n="outputFolderTitle">Carpeta de salida</div>
+        <div class="row">
+          <input type="text" id="outputFolder" data-i18n-placeholder="outputFolderPh" placeholder="Seleccioná dónde guardar el WebM..." readonly>
+          <button class="btn bp" id="btnOutputFolder" data-i18n="btnBrowse">Buscar</button>
+        </div>
+      </div>
+
+      <!-- Config -->
+      <div class="card">
+        <div class="ctitle" data-i18n="configTitle">Configuración</div>
+        <div class="grid2">
+          <div>
+            <label for="outputName" data-i18n="outputNameLabel">Nombre del WebM</label>
+            <input type="text" id="outputName" placeholder="mi_animacion">
+          </div>
+          <div>
+            <label for="fps">FPS</label>
+            <select id="fps">
+              <option value="12">12 fps</option>
+              <option value="24">24 fps</option>
+              <option value="25">25 fps</option>
+              <option value="30" selected>30 fps</option>
+              <option value="60">60 fps</option>
+            </select>
+          </div>
+        </div>
+        <div class="toggle-row">
+          <label class="toggle-label">
+            <input type="checkbox" id="boomerang">
+            <span class="toggle-switch"></span>
+            <span data-i18n="loopBoomerang">Loop ida y vuelta (boomerang)</span>
+          </label>
+          <span class="toggle-hint" data-i18n="loopHint">El video va del frame 0 → N → 0 para un loop continuo</span>
+        </div>
+      </div>
+
+      <!-- FFmpeg path (collapsible) -->
+      <details class="card details-card">
+        <summary class="ctitle clickable" data-i18n="ffmpegCustom">⚙ Ruta personalizada de FFmpeg (opcional)</summary>
+        <div class="row" style="margin-top:12px">
+          <input type="text" id="ffmpegPath" data-i18n-placeholder="ffmpegPh" placeholder="Ej: C:\ffmpeg\bin\ffmpeg.exe">
+          <button class="btn bg" id="btnRecheck" data-i18n="btnVerify">Verificar</button>
+        </div>
+      </details>
+
+      <!-- Convert button -->
+      <button class="btn bp btn-big" id="btnConvert" disabled data-i18n="btnConvertStart">
+        🚀 Convertir a WebM
+      </button>
+
+      <!-- Progress -->
+      <div class="card" id="progressCard" style="display:none">
+        <div class="ctitle" data-i18n="progressTitle">Progreso</div>
+        <div class="progress-bar-wrap">
+          <div class="progress-bar" id="progressBar"></div>
+        </div>
+        <div class="progress-text" id="progressText">Esperando...</div>
+      </div>
+
+      <!-- Log -->
+      <div class="card" id="logCard" style="display:none">
+        <div class="ctitle" data-i18n="logTitle">Log</div>
+        <div class="log-box" id="logBox"></div>
+      </div>
+
+    </div>
+
+    <!-- ═══════════════ TAB: PREVIEW ═══════════════ -->
+    <div class="tab-content" id="tab-preview">
+
+      <div class="card">
+        <div class="ctitle" data-i18n="previewTitle">Verificar transparencia Alpha</div>
+        <p class="preview-desc" data-i18n="previewDesc">
+          Cargá un archivo <strong>.webm</strong> y verificá que tenga transparencia real.
+          El video se reproduce sobre un fondo que podés cambiar para confirmar el canal alpha.
+        </p>
+
+        <div class="row" style="margin-top:14px">
+          <input type="text" id="previewFilePath" data-i18n-placeholder="previewFilePh" placeholder="Seleccioná un archivo .webm..." readonly>
+          <button class="btn bp" id="btnPickWebm" data-i18n="btnPickWebm">Buscar WebM</button>
+        </div>
+      </div>
+
+      <!-- Preview area -->
+      <div class="card preview-card" id="previewCard" style="display:none">
+        <div class="ctitle" data-i18n="previewBoxTitle">Preview</div>
+
+        <!-- Background switcher -->
+        <div class="bg-switcher">
+          <span class="bg-label" data-i18n="bgLabel">Fondo:</span>
+          <button class="bg-btn active" data-bg="checker" title="Checkerboard">
+            <svg width="16" height="16" viewBox="0 0 16 16"><rect width="8" height="8" fill="#ccc"/><rect x="8" y="8" width="8" height="8" fill="#ccc"/><rect x="8" width="8" height="8" fill="#fff"/><rect y="8" width="8" height="8" fill="#fff"/></svg>
+          </button>
+          <button class="bg-btn" data-bg="gradient" title="Gradiente animado">🌈</button>
+          <button class="bg-btn" data-bg="white" title="Blanco">⬜</button>
+          <button class="bg-btn" data-bg="black" title="Negro">⬛</button>
+          <button class="bg-btn" data-bg="red" title="Rojo">🟥</button>
+          <button class="bg-btn" data-bg="green" title="Verde">🟩</button>
+          <button class="bg-btn" data-bg="blue" title="Azul">🟦</button>
+        </div>
+
+        <!-- Video container with backgrounds -->
+        <div class="preview-viewport" id="previewViewport">
+          <div class="preview-bg" id="previewBg"></div>
+          <video id="previewVideo" loop muted playsinline></video>
+        </div>
+
+        <!-- Controls -->
+        <div class="preview-controls">
+          <button class="btn bg" id="btnPlayPause">▶ Play</button>
+          <button class="btn bg" id="btnLoop">🔁 Loop: ON</button>
+          <div class="preview-info" id="previewInfo"></div>
+        </div>
+
+        <!-- Alpha verdict -->
+        <div class="alpha-verdict" id="alphaVerdict"></div>
+      </div>
+
+    </div>
+
+    <footer style="text-align: center; margin-top: 16px; font-size: 12px; color: var(--muted);">
+      <span data-i18n="createdBy">Created by</span> <a href="#" onclick="event.preventDefault(); window.__TAURI__.core.invoke('open_url', { url: 'https://github.com/nikro9' })" style="color: var(--primary); text-decoration: none;">nikro9</a>
+    </footer>
+
+  </div>
+
+  <script src="main.js"></script>
+</body>
+</html>
